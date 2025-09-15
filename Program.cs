@@ -21,21 +21,26 @@ public class Program
 
 public class CubeWindow : GameWindow
 {
-    private readonly float[] _vertices =
+    private readonly float[] cube_vertices =
     {
+        //the points of the cube
         // Positions          // Colors
-        -0.5f, -0.5f, -0.5f,  1f, 0f, 0f,
-         0.5f, -0.5f, -0.5f,  0f, 1f, 0f,
+        -0.5f, -0.5f, -0.5f,  1f, 0f, 0f, 
+         0.5f, -0.5f, -0.5f,  0f, 0f, 0f,
          0.5f,  0.5f, -0.5f,  0f, 0f, 1f,
         -0.5f,  0.5f, -0.5f,  1f, 1f, 0f,
-        -0.5f, -0.5f,  0.5f,  0f, 1f, 1f,
+        -0.5f, -0.5f,  0.5f,  0f, 0f, 1f,
          0.5f, -0.5f,  0.5f,  1f, 0f, 1f,
          0.5f,  0.5f,  0.5f,  1f, 1f, 1f,
         -0.5f,  0.5f,  0.5f,  0f, 0f, 0f,
     };
 
-    private readonly uint[] _indices =
+
+
+    private readonly uint[] cube_indices =
     {
+
+        //so basically the face of the cubes
         0, 1, 2, 2, 3, 0, // back
         4, 5, 6, 6, 7, 4, // front
         0, 4, 7, 7, 3, 0, // left
@@ -44,11 +49,66 @@ public class CubeWindow : GameWindow
         0, 1, 5, 5, 4, 0  // bottom
     };
 
+    private readonly float[] prism_vertices =
+    {
+        //for prism
+        // Positions              // Colors
+        // Base triangle (z = -0.5)
+        -0.5f, -0.5f, -0.5f,      1f, 0f, 0f, // 0
+         0.5f, -0.5f, -0.5f,      0f, 1f, 0f, // 1
+         0.0f,  0.5f, -0.5f,      0f, 0f, 1f, // 2
+
+        // Top triangle (z = +0.5)
+        -0.5f, -0.5f,  0.5f,      1f, 1f, 0f, // 3
+         0.5f, -0.5f,  0.5f,      0f, 1f, 1f, // 4
+         0.0f,  0.5f,  0.5f,      1f, 0f, 1f  // 5
+
+    };
+
+        private readonly uint[] prism_indices =
+    {
+        // Base
+        0, 1, 2,
+        // Top
+        3, 5, 4,
+
+        // Sides
+        0, 1, 4, 4, 3, 0, // side 1
+        1, 2, 5, 5, 4, 1, // side 2
+        2, 0, 3, 3, 5, 2  // side 3
+    };
+
+        private readonly float[] pyramid_vertices =
+    {
+        // Positions              // Colors
+        // Base (z = -0.5)
+        -0.5f, -0.5f, -0.5f,      1f, 0f, 0f, // 0
+         0.5f, -0.5f, -0.5f,      0f, 1f, 0f, // 1
+         0.5f,  0.5f, -0.5f,      0f, 0f, 1f, // 2
+        -0.5f,  0.5f, -0.5f,      1f, 1f, 0f, // 3
+
+        // Apex (z = +0.5)
+         0.0f,  0.0f,  0.5f,      1f, 0f, 1f  // 4
+    };
+
+        private readonly uint[] pyramid_indices =
+        {
+        // Base (two triangles)
+        0, 1, 2,
+        2, 3, 0,
+
+        // Sides
+        0, 1, 4,
+        1, 2, 4,
+        2, 3, 4,
+        3, 0, 4
+    };
+
     private int _vao, _vbo, _ebo, _shader;
     private float _angle;
 
-    private Vector3 _cubePosition = Vector3.Zero; // << moved here
-    private float _speed = 2.0f;                  // << moved here
+    private Vector3 _cubePosition = Vector3.Zero; 
+    private float _speed = 2.0f;                  
 
     public CubeWindow(GameWindowSettings gws, NativeWindowSettings nws)
         : base(gws, nws) { }
@@ -63,11 +123,27 @@ public class CubeWindow : GameWindow
 
         _vbo = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-        GL.BufferData(BufferTarget.ArrayBuffer, _vertices.Length * sizeof(float), _vertices, BufferUsageHint.StaticDraw);
+        GL.BufferData(BufferTarget.ArrayBuffer, cube_vertices.Length * sizeof(float), cube_vertices, BufferUsageHint.StaticDraw);
 
         _ebo = GL.GenBuffer();
         GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
-        GL.BufferData(BufferTarget.ElementArrayBuffer, _indices.Length * sizeof(uint), _indices, BufferUsageHint.StaticDraw);
+        GL.BufferData(BufferTarget.ElementArrayBuffer, cube_indices.Length * sizeof(uint), cube_indices, BufferUsageHint.StaticDraw);
+
+        //_vbo = GL.GenBuffer();
+        //GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
+        //GL.BufferData(BufferTarget.ArrayBuffer, prism_vertices.Length * sizeof(float), prism_vertices, BufferUsageHint.StaticDraw);
+
+        //_ebo = GL.GenBuffer();
+        //GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
+        //GL.BufferData(BufferTarget.ElementArrayBuffer, prism_indices.Length * sizeof(uint), prism_indices, BufferUsageHint.StaticDraw);
+
+        //_vbo = GL.GenBuffer();
+        //GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
+        //GL.BufferData(BufferTarget.ArrayBuffer, pyramid_vertices.Length * sizeof(float), pyramid_vertices, BufferUsageHint.StaticDraw);
+
+        //_ebo = GL.GenBuffer();
+        //GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
+        //GL.BufferData(BufferTarget.ElementArrayBuffer, pyramid_indices.Length * sizeof(uint), pyramid_indices, BufferUsageHint.StaticDraw);
 
         // Vertex attributes
         GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
@@ -157,7 +233,7 @@ public class CubeWindow : GameWindow
         GL.UniformMatrix4(GL.GetUniformLocation(_shader, "projection"), false, ref projection);
 
         GL.BindVertexArray(_vao);
-        GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
+        GL.DrawElements(PrimitiveType.Triangles, cube_indices.Length, DrawElementsType.UnsignedInt, 0);
 
         SwapBuffers();
     }
