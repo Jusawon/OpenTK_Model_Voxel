@@ -25,38 +25,67 @@ namespace VoxelQuadsViewer
 
     class CubeWindow : GameWindow
     {
-        // YOUR exact groups of 4 coordinates (22 quads)
-        private static readonly Vector3[][] quads = new Vector3[][]
-        {
-            new[]{ new Vector3(-0.5f,-0.5f,-0.2f), new Vector3(-0.5f,-0.3f,-0.2f), new Vector3(-0.3f,-0.5f,-0.2f), new Vector3(-0.3f,-0.3f,-0.2f) },
-            new[]{ new Vector3(-0.5f,-0.5f,-0.2f), new Vector3(-0.5f,-0.3f,-0.2f), new Vector3(-0.3f,-0.5f,-0.2f), new Vector3(-0.3f,-0.3f,-0.2f) },
-            new[]{ new Vector3(-0.5f,-0.5f,-0.2f), new Vector3(-0.5f,-0.3f,-0.2f), new Vector3(-0.3f,-0.5f,-0.2f), new Vector3(-0.3f,-0.3f,-0.2f) },
-            new[]{ new Vector3(-0.5f,-0.5f, 0.0f), new Vector3(-0.5f,-0.3f, 0.0f), new Vector3(-0.3f,-0.5f, 0.0f), new Vector3(-0.3f,-0.3f, 0.0f) },
-
-            new[]{ new Vector3(-0.5f, 0.5f,-0.2f), new Vector3(-0.5f, 0.3f,-0.2f), new Vector3(-0.3f, 0.5f,-0.2f), new Vector3(-0.3f, 0.3f,-0.2f) },
-            new[]{ new Vector3(-0.5f, 0.5f, 0.0f), new Vector3(-0.5f, 0.3f, 0.0f), new Vector3(-0.3f, 0.5f, 0.0f), new Vector3(-0.3f, 0.3f, 0.0f) },
-
-            new[]{ new Vector3(0.6f,-0.5f,-0.2f), new Vector3(0.6f,-0.3f,-0.2f), new Vector3(0.4f,-0.5f,-0.2f), new Vector3(0.4f,-0.3f,-0.2f) },
-            new[]{ new Vector3(0.6f,-0.5f, 0.0f), new Vector3(0.6f,-0.3f, 0.0f), new Vector3(0.4f,-0.5f, 0.0f), new Vector3(0.4f,-0.3f, 0.0f) },
-
-            new[]{ new Vector3(0.6f, 0.5f,-0.2f), new Vector3(0.6f, 0.3f,-0.2f), new Vector3(0.4f, 0.5f,-0.2f), new Vector3(0.4f, 0.3f,-0.2f) },
-            new[]{ new Vector3(0.6f, 0.5f, 0.0f), new Vector3(0.6f, 0.3f, 0.0f), new Vector3(0.4f, 0.5f, 0.0f), new Vector3(0.4f, 0.3f, 0.0f) },
-
-            new[]{ new Vector3(0.7f, 0.7f, 0.0f), new Vector3(0.7f,-0.7f, 0.0f), new Vector3(-0.7f, 0.7f, 0.0f), new Vector3(-0.7f,-0.7f, 0.0f) },
-            new[]{ new Vector3(0.7f, 0.7f, 0.4f), new Vector3(0.7f,-0.7f, 0.4f), new Vector3(-0.7f, 0.7f, 0.4f), new Vector3(-0.7f,-0.7f, 0.4f) },
-            new[]{ new Vector3(0.7f, 0.7f, 0.4f), new Vector3(0.7f,-0.7f, 0.4f), new Vector3(-0.7f, 0.7f, 0.4f), new Vector3(-0.7f,-0.7f, 0.4f) },
-            new[]{ new Vector3(0.7f, 0.7f, 0.8f), new Vector3(0.7f,-0.7f, 0.8f), new Vector3(-0.7f, 0.7f, 0.8f), new Vector3(-0.7f,-0.7f, 0.8f) },
-
-            new[]{ new Vector3(0.8f, 0.1f, 0.3f), new Vector3(0.8f,-0.1f, 0.3f), new Vector3(0.7f, 0.1f, 0.3f), new Vector3(0.7f,-0.1f, 0.3f) },
-            new[]{ new Vector3(0.8f, 0.1f, 0.4f), new Vector3(0.8f,-0.1f, 0.4f), new Vector3(0.7f, 0.1f, 0.4f), new Vector3(0.7f,-0.1f, 0.4f) },
-
-            new[]{ new Vector3(-0.8f, 0.05f, 0.7f), new Vector3(-0.8f,-0.05f, 0.7f), new Vector3(-0.7f, 0.05f, 0.7f), new Vector3(-0.7f,-0.05f, 0.7f) },
-            new[]{ new Vector3(-0.8f, 0.05f, 0.9f), new Vector3(-0.8f,-0.05f, 0.9f), new Vector3(-0.7f, 0.05f, 0.9f), new Vector3(-0.7f,-0.05f, 0.9f) },
-
-            new[]{ new Vector3(0.5f,-0.3f,0.8f), new Vector3(0.5f,-0.4f,0.8f), new Vector3(0.4f,-0.3f,0.8f), new Vector3(0.4f,-0.4f,0.8f) },
-            new[]{ new Vector3(0.5f,-0.3f,0.9f), new Vector3(0.5f,-0.4f,0.9f), new Vector3(0.4f,-0.3f,0.9f), new Vector3(0.4f,-0.4f,0.9f) },
-            new[]{ new Vector3(0.5f, 0.3f,0.8f), new Vector3(0.5f, 0.4f,0.8f), new Vector3(0.4f, 0.3f,0.8f), new Vector3(0.4f, 0.4f,0.8f) },
-            new[]{ new Vector3(0.5f, 0.3f,0.9f), new Vector3(0.5f, 0.4f,0.9f), new Vector3(0.4f, 0.3f,0.9f), new Vector3(0.4f, 0.4f,0.9f) },
+        Vector3[][] cubes = {
+            new Vector3[] { // Cube 0
+                new Vector3(-0.5f,-0.5f,-0.2f), new Vector3(-0.5f,-0.3f,-0.2f),
+                new Vector3(-0.3f,-0.5f,-0.2f), new Vector3(-0.3f,-0.3f,-0.2f),
+                new Vector3(-0.5f,-0.5f, 0.0f), new Vector3(-0.5f,-0.3f, 0.0f),
+                new Vector3(-0.3f,-0.5f, 0.0f), new Vector3(-0.3f,-0.3f, 0.0f)
+            },
+            new Vector3[] { // Cube 1
+                new Vector3(-0.5f, 0.5f,-0.2f), new Vector3(-0.5f, 0.3f,-0.2f),
+                new Vector3(-0.3f, 0.5f,-0.2f), new Vector3(-0.3f, 0.3f,-0.2f),
+                new Vector3(-0.5f, 0.5f, 0.0f), new Vector3(-0.5f, 0.3f, 0.0f),
+                new Vector3(-0.3f, 0.5f, 0.0f), new Vector3(-0.3f, 0.3f, 0.0f)
+            },
+            new Vector3[] { // Cube 2
+                new Vector3(0.6f,-0.5f,-0.2f), new Vector3(0.6f,-0.3f,-0.2f),
+                new Vector3(0.4f,-0.5f,-0.2f), new Vector3(0.4f,-0.3f,-0.2f),
+                new Vector3(0.6f,-0.5f, 0.0f), new Vector3(0.6f,-0.3f, 0.0f),
+                new Vector3(0.4f,-0.5f, 0.0f), new Vector3(0.4f,-0.3f, 0.0f)
+            },
+            new Vector3[] { // Cube 3
+                new Vector3(0.6f, 0.5f,-0.2f), new Vector3(0.6f, 0.3f,-0.2f),
+                new Vector3(0.4f, 0.5f,-0.2f), new Vector3(0.4f, 0.3f,-0.2f),
+                new Vector3(0.6f, 0.5f, 0.0f), new Vector3(0.6f, 0.3f, 0.0f),
+                new Vector3(0.4f, 0.5f, 0.0f), new Vector3(0.4f, 0.3f, 0.0f)
+            },
+            new Vector3[] { // Cube 4
+                new Vector3(0.7f, 0.7f, 0.0f), new Vector3(0.7f,-0.7f, 0.0f),
+                new Vector3(-0.7f,0.7f, 0.0f), new Vector3(-0.7f,-0.7f, 0.0f),
+                new Vector3(0.7f, 0.7f, 0.4f), new Vector3(0.7f,-0.7f, 0.4f),
+                new Vector3(-0.7f,0.7f, 0.4f), new Vector3(-0.7f,-0.7f, 0.4f)
+            },
+            new Vector3[] { // Cube 5
+                new Vector3(0.7f, 0.7f, 0.4f), new Vector3(0.7f,-0.7f, 0.4f),
+                new Vector3(-0.7f,0.7f, 0.4f), new Vector3(-0.7f,-0.7f, 0.4f),
+                new Vector3(0.7f, 0.7f, 0.8f), new Vector3(0.7f,-0.7f, 0.8f),
+                new Vector3(-0.7f,0.7f, 0.8f), new Vector3(-0.7f,-0.7f, 0.8f)
+            },
+            new Vector3[] { // Cube 6
+                new Vector3(0.8f, 0.1f, 0.3f), new Vector3(0.8f,-0.1f, 0.3f),
+                new Vector3(0.7f, 0.1f, 0.3f), new Vector3(0.7f,-0.1f, 0.3f),
+                new Vector3(0.8f, 0.1f, 0.4f), new Vector3(0.8f,-0.1f, 0.4f),
+                new Vector3(0.7f, 0.1f, 0.4f), new Vector3(0.7f,-0.1f, 0.4f)
+            },
+            new Vector3[] { // Cube 7
+                new Vector3(-0.8f,0.05f,0.7f), new Vector3(-0.8f,-0.05f,0.7f),
+                new Vector3(-0.7f,0.05f,0.7f), new Vector3(-0.7f,-0.05f,0.7f),
+                new Vector3(-0.8f,0.05f,0.9f), new Vector3(-0.8f,-0.05f,0.9f),
+                new Vector3(-0.7f,0.05f,0.9f), new Vector3(-0.7f,-0.05f,0.9f)
+            },
+            new Vector3[] { // Cube 8
+                new Vector3(0.5f,-0.3f,0.8f), new Vector3(0.5f,-0.4f,0.8f),
+                new Vector3(0.4f,-0.3f,0.8f), new Vector3(0.4f,-0.4f,0.8f),
+                new Vector3(0.5f,-0.3f,0.9f), new Vector3(0.5f,-0.4f,0.9f),
+                new Vector3(0.4f,-0.3f,0.9f), new Vector3(0.4f,-0.4f,0.9f)
+            },
+            new Vector3[] { // Cube 9
+                new Vector3(0.5f, 0.3f,0.8f), new Vector3(0.5f, 0.4f,0.8f),
+                new Vector3(0.4f, 0.3f,0.8f), new Vector3(0.4f, 0.4f,0.8f),
+                new Vector3(0.5f, 0.3f,0.9f), new Vector3(0.5f, 0.4f,0.9f),
+                new Vector3(0.4f, 0.3f,0.9f), new Vector3(0.4f, 0.4f,0.9f)
+            }
         };
 
         private int _vao, _vbo, _ebo, _shader;
@@ -76,40 +105,41 @@ namespace VoxelQuadsViewer
         private float _distance = 5f; // zoom
 
         // Mouse controls
-        
+
         private void BuildVoxelModel()
         {
             var verts = new List<float>();
             var inds = new List<uint>();
             uint offset = 0;
 
-            // simple palette
-            Vector3[] palette = {
-        new Vector3(1,0,0), new Vector3(0,1,0), new Vector3(0,0,1),
-        new Vector3(1,1,0), new Vector3(1,0,1), new Vector3(0,1,1)
+            // One color per cube (fill these in!)
+            Vector3[] cubeColors =
+            {
+        new Vector3(0.9f, 0.9f, 0.9f), // Rear Right Nub
+        new Vector3(0.9f, 0.9f, 0.9f), // Rear Left Nub
+        new Vector3(0.9f, 0.9f, 0.9f), // Front Right Nub
+        new Vector3(0.9f, 0.9f, 0.9f), // Front Left Nub
+        new Vector3(0.9f, 0.9f, 0.9f), // Bottom Layer
+        new Vector3(0.42f, 0.48f, 0.55f), // Top Layer
+        new Vector3(0.9f, 0.9f, 0.9f), // Snout
+        new Vector3(0.42f, 0.48f, 0.55f), // Tail
+        new Vector3(0.42f, 0.48f, 0.55f), // Left Ear
+        new Vector3(0.42f, 0.48f, 0.55f), // Right Ear
     };
 
-            // iterate by pairs (every 2 quads -> one cube)
-            for (int i = 0; i < quads.Length; i += 2)
+            for (int cubeIndex = 0; cubeIndex < cubes.Length; cubeIndex++)
             {
-                var bottom = quads[i];
-                var top = quads[i + 1];
-                var color = palette[(i / 2) % palette.Length];
+                Vector3[] cubeVerts = cubes[cubeIndex];
+                Vector3 color = cubeColors[cubeIndex];
 
-                // collect 8 corners (order: bottom4 + top4)
-                Vector3[] cubeVerts = {
-            bottom[0], bottom[1], bottom[2], bottom[3],
-            top[0],    top[1],    top[2],    top[3]
-        };
-
-                // add vertices with color
+                // Each cube has 8 verts
                 foreach (var v in cubeVerts)
                 {
                     verts.Add(v.X); verts.Add(v.Y); verts.Add(v.Z);
                     verts.Add(color.X); verts.Add(color.Y); verts.Add(color.Z);
                 }
 
-                // cube face indices (12 triangles)
+                // Cube faces (12 triangles, 36 indices)
                 uint[] cubeIdx = {
             0,1,2, 2,1,3,   // bottom
             4,6,5, 5,6,7,   // top
@@ -119,13 +149,16 @@ namespace VoxelQuadsViewer
             2,3,6, 6,3,7    // right
         };
 
-                foreach (var idx in cubeIdx) inds.Add(offset + idx);
+                foreach (var idx in cubeIdx)
+                    inds.Add(offset + idx);
+
                 offset += 8;
             }
 
             _modelVertices = verts.ToArray();
             _modelIndices = inds.ToArray();
         }
+
 
         protected override void OnLoad()
         {
@@ -136,6 +169,7 @@ namespace VoxelQuadsViewer
             // create and upload buffers
             _vao = GL.GenVertexArray(); GL.BindVertexArray(_vao);
 
+
             _vbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
             GL.BufferData(BufferTarget.ArrayBuffer, _modelVertices.Length * sizeof(float), _modelVertices, BufferUsageHint.StaticDraw);
@@ -144,6 +178,18 @@ namespace VoxelQuadsViewer
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
             GL.BufferData(BufferTarget.ElementArrayBuffer, _modelIndices.Length * sizeof(uint), _modelIndices, BufferUsageHint.StaticDraw);
 
+            // pos (3 floats)
+            GL.EnableVertexAttribArray(0);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 9 * sizeof(float), 0);
+
+            // color (3 floats)
+            GL.EnableVertexAttribArray(1);
+            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 9 * sizeof(float), 3 * sizeof(float));
+
+            // normal (3 floats)
+            GL.EnableVertexAttribArray(2);
+            GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, 9 * sizeof(float), 6 * sizeof(float));
+
             // attributes: position vec3, color vec3
             GL.EnableVertexAttribArray(0);
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
@@ -151,27 +197,65 @@ namespace VoxelQuadsViewer
             GL.EnableVertexAttribArray(1);
             GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
 
+
             // simple color shader
             string vs = @"
                 #version 330 core
                 layout(location=0) in vec3 aPos;
                 layout(location=1) in vec3 aColor;
+                layout(location=2) in vec3 aNormal;
+
                 uniform mat4 model;
                 uniform mat4 view;
                 uniform mat4 projection;
+
                 out vec3 vColor;
+                out vec3 vNormal;
+                out vec3 vFragPos;
+
                 void main()
                 {
-                    gl_Position = projection * view * model * vec4(aPos,1.0);
+                    gl_Position = projection * view * model * vec4(aPos, 1.0);
+                    vFragPos = vec3(model * vec4(aPos, 1.0));   // world space position
+                    vNormal = mat3(transpose(inverse(model))) * aNormal; // transformed normal
                     vColor = aColor;
                 }";
+
             string fs = @"
                 #version 330 core
                 in vec3 vColor;
+                in vec3 vNormal;
+                in vec3 vFragPos;
+
                 out vec4 FragColor;
+
+                uniform vec3 lightPos;   // world space light position
+                uniform vec3 viewPos;    // camera position
+                uniform vec3 lightColor; // usually white (1,1,1)
+
                 void main()
                 {
-                    FragColor = vec4(vColor, 1.0);
+                    // Normalize
+                    vec3 norm = normalize(vNormal);
+                    vec3 lightDir = normalize(lightPos - vFragPos);
+
+                    // Ambient
+                    float ambientStrength = 0.2;
+                    vec3 ambient = ambientStrength * lightColor;
+
+                    // Diffuse
+                    float diff = max(dot(norm, lightDir), 0.0);
+                    vec3 diffuse = diff * lightColor;
+
+                    // Specular
+                    float specularStrength = 0.5;
+                    vec3 viewDir = normalize(viewPos - vFragPos);
+                    vec3 reflectDir = reflect(-lightDir, norm);
+                    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+                    vec3 specular = specularStrength * spec * lightColor;
+
+                    vec3 result = (ambient + diffuse + specular) * vColor;
+                    FragColor = vec4(result, 1.0);
                 }";
 
             int vsId = GL.CreateShader(ShaderType.VertexShader); GL.ShaderSource(vsId, vs); GL.CompileShader(vsId);
@@ -233,6 +317,18 @@ namespace VoxelQuadsViewer
             GL.UniformMatrix4(GL.GetUniformLocation(_shader, "model"), false, ref model);
             GL.UniformMatrix4(GL.GetUniformLocation(_shader, "view"), false, ref view);
             GL.UniformMatrix4(GL.GetUniformLocation(_shader, "projection"), false, ref proj);
+
+            // Use your shader
+            GL.UseProgram(_shader);
+
+            // Camera position = camPos you already compute
+            GL.Uniform3(GL.GetUniformLocation(_shader, "viewPos"), camPos);
+
+            // Example light
+            Vector3 lightPos = new Vector3(2f, 2f, 2f);
+            Vector3 lightColor = new Vector3(1f, 1f, 1f);
+            GL.Uniform3(GL.GetUniformLocation(_shader, "lightPos"), lightPos);
+            GL.Uniform3(GL.GetUniformLocation(_shader, "lightColor"), lightColor);
 
             // Draw the voxel model
             GL.BindVertexArray(_vao);
