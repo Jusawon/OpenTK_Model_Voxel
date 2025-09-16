@@ -5,6 +5,7 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace VoxelQuadsViewer
 {
@@ -25,6 +26,23 @@ namespace VoxelQuadsViewer
 
     class CubeWindow : GameWindow
     {
+        private int _vao, _vbo, _ebo;
+        private int _celShader, _outlineShader;
+        private float[] _modelVertices;
+        private uint[] _modelIndices;
+
+        private Vector3 _modelTranslation = Vector3.Zero;
+        private float _panSpeed = 1.5f;
+
+        public CubeWindow(GameWindowSettings gws, NativeWindowSettings nws) : base(gws, nws) { }
+        private Vector2 _lastMousePos;
+        private bool _dragging = false;
+        private bool _firstMove = true;
+
+        private float _yaw = -45f;   // left-right
+        private float _pitch = 30f;  // up-down
+        private float _distance = 5f; // zoom
+
         Vector3[][] cubes = {
             new Vector3[] { // Cube 0
                 new Vector3(-0.5f,-0.5f,-0.2f), new Vector3(-0.5f,-0.3f,-0.2f),
@@ -88,76 +106,80 @@ namespace VoxelQuadsViewer
             }
         };
 
-        private int _vao, _vbo, _ebo, _shader;
-        private float[] _modelVertices;
-        private uint[] _modelIndices;
-
-        private Vector3 _modelTranslation = Vector3.Zero;
-        private float _panSpeed = 1.5f;
-
-        public CubeWindow(GameWindowSettings gws, NativeWindowSettings nws) : base(gws, nws) { }
-        private Vector2 _lastMousePos;
-        private bool _dragging = false;
-        private bool _firstMove = true;
-
-        private float _yaw = -45f;   // left-right
-        private float _pitch = 30f;  // up-down
-        private float _distance = 5f; // zoom
-
-        // Mouse controls
-
         private void BuildVoxelModel()
         {
             var verts = new List<float>();
             var inds = new List<uint>();
             uint offset = 0;
 
-            // One color per cube (fill these in!)
             Vector3[] cubeColors =
             {
-        new Vector3(0.9f, 0.9f, 0.9f), // Rear Right Nub
-        new Vector3(0.9f, 0.9f, 0.9f), // Rear Left Nub
-        new Vector3(0.9f, 0.9f, 0.9f), // Front Right Nub
-        new Vector3(0.9f, 0.9f, 0.9f), // Front Left Nub
-        new Vector3(0.9f, 0.9f, 0.9f), // Bottom Layer
-        new Vector3(0.42f, 0.48f, 0.55f), // Top Layer
-        new Vector3(0.9f, 0.9f, 0.9f), // Snout
-        new Vector3(0.42f, 0.48f, 0.55f), // Tail
-        new Vector3(0.42f, 0.48f, 0.55f), // Left Ear
-        new Vector3(0.42f, 0.48f, 0.55f), // Right Ear
+        new Vector3(0.9f, 0.9f, 0.9f),   // Rear Right Nub
+        new Vector3(0.9f, 0.9f, 0.9f),   // Rear Left Nub
+        new Vector3(0.9f, 0.9f, 0.9f),   // Front Right Nub
+        new Vector3(0.9f, 0.9f, 0.9f),   // Front Left Nub
+        new Vector3(0.9f, 0.9f, 0.9f),   // Bottom Layer
+        new Vector3(0.42f, 0.48f, 0.55f),// Top Layer
+        new Vector3(0.9f, 0.9f, 0.9f),   // Snout
+        new Vector3(0.42f, 0.48f, 0.55f),// Tail
+        new Vector3(0.42f, 0.48f, 0.55f),// Left Ear
+        new Vector3(0.42f, 0.48f, 0.55f) // Right Ear
     };
 
-            for (int cubeIndex = 0; cubeIndex < cubes.Length; cubeIndex++)
-            {
-                Vector3[] cubeVerts = cubes[cubeIndex];
-                Vector3 color = cubeColors[cubeIndex];
+            // Cube faces: 4 vertex indices per face + normal
+            (int[], Vector3)[] faces = {
+        (new[]{0,1,3,2}, new Vector3(0,0,-1)), // back
+        (new[]{4,5,7,6}, new Vector3(0,0,1)),  // front
+        (new[]{0,2,6,4}, new Vector3(0,-1,0)), // bottom
+        (new[]{1,3,7,5}, new Vector3(0,1,0)),  // top
+        (new[]{0,4,5,1}, new Vector3(-1,0,0)), // left
+        (new[]{2,3,7,6}, new Vector3(1,0,0)),  // right
+    };
 
-                // Each cube has 8 verts
+            for (int ci = 0; ci < cubes.Length; ci++)
+            {
+                var cubeVerts = cubes[ci];
+                Vector3 color = cubeColors[Math.Min(ci, cubeColors.Length - 1)];
+
+                // Add all 8 cube vertices only once
                 foreach (var v in cubeVerts)
                 {
                     verts.Add(v.X); verts.Add(v.Y); verts.Add(v.Z);
                     verts.Add(color.X); verts.Add(color.Y); verts.Add(color.Z);
+                    verts.Add(0f); verts.Add(0f); verts.Add(0f); // placeholder normal
                 }
 
-                // Cube faces (12 triangles, 36 indices)
-                uint[] cubeIdx = {
-            0,1,2, 2,1,3,   // bottom
-            4,6,5, 5,6,7,   // top
-            0,2,4, 4,2,6,   // front
-            1,5,3, 3,5,7,   // back
-            0,4,1, 1,4,5,   // left
-            2,3,6, 6,3,7    // right
-        };
+                // Add indices per face and assign normals per vertex
+                foreach (var (faceIdx, normal) in faces)
+                {
+                    // Assign normal to each vertex in the face
+                    foreach (int fi in faceIdx)
+                    {
+                        int vertStart = (int)(offset + fi) * 9;
+                        verts[vertStart + 6] = normal.X;
+                        verts[vertStart + 7] = normal.Y;
+                        verts[vertStart + 8] = normal.Z;
+                    }
 
-                foreach (var idx in cubeIdx)
-                    inds.Add(offset + idx);
+                    // Triangulate face
+                    inds.Add(offset + (uint)faceIdx[0]);
+                    inds.Add(offset + (uint)faceIdx[1]);
+                    inds.Add(offset + (uint)faceIdx[2]);
 
-                offset += 8;
+                    inds.Add(offset + (uint)faceIdx[0]);
+                    inds.Add(offset + (uint)faceIdx[2]);
+                    inds.Add(offset + (uint)faceIdx[3]);
+                }
+
+                offset += (uint)cubeVerts.Length; // 8 vertices per cube
             }
 
             _modelVertices = verts.ToArray();
             _modelIndices = inds.ToArray();
+            GL.Enable(EnableCap.CullFace);
+            GL.CullFace(CullFaceMode.Back);
         }
+
 
 
         protected override void OnLoad()
@@ -169,7 +191,6 @@ namespace VoxelQuadsViewer
             // create and upload buffers
             _vao = GL.GenVertexArray(); GL.BindVertexArray(_vao);
 
-
             _vbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
             GL.BufferData(BufferTarget.ArrayBuffer, _modelVertices.Length * sizeof(float), _modelVertices, BufferUsageHint.StaticDraw);
@@ -178,96 +199,133 @@ namespace VoxelQuadsViewer
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
             GL.BufferData(BufferTarget.ElementArrayBuffer, _modelIndices.Length * sizeof(uint), _modelIndices, BufferUsageHint.StaticDraw);
 
-            // pos (3 floats)
+            // Each vertex = 9 floats (3 pos + 3 col + 3 normal)
+            int stride = 9 * sizeof(float);
+
+            // position attribute (layout=0 in vertex shader)
             GL.EnableVertexAttribArray(0);
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 9 * sizeof(float), 0);
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, 0);
 
-            // color (3 floats)
+            // color attribute (layout=1)
             GL.EnableVertexAttribArray(1);
-            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 9 * sizeof(float), 3 * sizeof(float));
+            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
 
-            // normal (3 floats)
+            // normal attribute (layout=2)
             GL.EnableVertexAttribArray(2);
-            GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, 9 * sizeof(float), 6 * sizeof(float));
-
-            // attributes: position vec3, color vec3
-            GL.EnableVertexAttribArray(0);
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
-
-            GL.EnableVertexAttribArray(1);
-            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
+            GL.VertexAttribPointer(2, 3, VertexAttribPointerType.Float, false, stride, 6 * sizeof(float));
 
 
-            // simple color shader
-            string vs = @"
+            // === Cel Shader ===
+            string celVS = @"
                 #version 330 core
                 layout(location=0) in vec3 aPos;
                 layout(location=1) in vec3 aColor;
                 layout(location=2) in vec3 aNormal;
 
-                uniform mat4 model;
-                uniform mat4 view;
-                uniform mat4 projection;
-
                 out vec3 vColor;
                 out vec3 vNormal;
                 out vec3 vFragPos;
 
+                uniform mat4 model;
+                uniform mat4 view;
+                uniform mat4 projection;
+
                 void main()
                 {
-                    gl_Position = projection * view * model * vec4(aPos, 1.0);
-                    vFragPos = vec3(model * vec4(aPos, 1.0));   // world space position
-                    vNormal = mat3(transpose(inverse(model))) * aNormal; // transformed normal
                     vColor = aColor;
+                    vNormal = mat3(transpose(inverse(model))) * aNormal;
+                    vFragPos = vec3(model * vec4(aPos, 1.0));
+                    gl_Position = projection * view * vec4(vFragPos, 1.0);
                 }";
 
-            string fs = @"
+            string celFS = @"
                 #version 330 core
                 in vec3 vColor;
                 in vec3 vNormal;
                 in vec3 vFragPos;
-
                 out vec4 FragColor;
 
-                uniform vec3 lightPos;   // world space light position
-                uniform vec3 viewPos;    // camera position
-                uniform vec3 lightColor; // usually white (1,1,1)
+                uniform vec3 lightPos;
+                uniform vec3 viewPos;
+                uniform vec3 lightColor;
 
                 void main()
                 {
-                    // Normalize
                     vec3 norm = normalize(vNormal);
                     vec3 lightDir = normalize(lightPos - vFragPos);
 
                     // Ambient
-                    float ambientStrength = 0.2;
+                    float ambientStrength = 0.6;
                     vec3 ambient = ambientStrength * lightColor;
 
-                    // Diffuse
+                    // Diffuse (quantized)
                     float diff = max(dot(norm, lightDir), 0.0);
-                    vec3 diffuse = diff * lightColor;
+                    float levels = 3.0;
+                    float diffStep = floor(diff * levels) / levels;
+                    vec3 diffuse = diffStep * lightColor + 0.3 * lightColor;
 
-                    // Specular
-                    float specularStrength = 0.5;
+
+                    // Specular (hard)
                     vec3 viewDir = normalize(viewPos - vFragPos);
                     vec3 reflectDir = reflect(-lightDir, norm);
-                    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-                    vec3 specular = specularStrength * spec * lightColor;
+                    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+                    float specStep = step(0.5, spec);
+                    vec3 specular = specStep * lightColor * 0.5;
 
                     vec3 result = (ambient + diffuse + specular) * vColor;
                     FragColor = vec4(result, 1.0);
                 }";
 
-            int vsId = GL.CreateShader(ShaderType.VertexShader); GL.ShaderSource(vsId, vs); GL.CompileShader(vsId);
-            int fsId = GL.CreateShader(ShaderType.FragmentShader); GL.ShaderSource(fsId, fs); GL.CompileShader(fsId);
+            _celShader = GL.CreateProgram();
+            int celVSId = GL.CreateShader(ShaderType.VertexShader);
+            GL.ShaderSource(celVSId, celVS);
+            GL.CompileShader(celVSId);
+            int celFSId = GL.CreateShader(ShaderType.FragmentShader);
+            GL.ShaderSource(celFSId, celFS);
+            GL.CompileShader(celFSId);
+            GL.AttachShader(_celShader, celVSId);
+            GL.AttachShader(_celShader, celFSId);
+            GL.LinkProgram(_celShader);
+            GL.DeleteShader(celVSId);
+            GL.DeleteShader(celFSId);
 
-            _shader = GL.CreateProgram();
-            GL.AttachShader(_shader, vsId); GL.AttachShader(_shader, fsId); GL.LinkProgram(_shader);
-            GL.DeleteShader(vsId); GL.DeleteShader(fsId);
+            // === Outline Shader ===
+            string outlineVS = @"
+                #version 330 core
+                layout(location=0) in vec3 aPos;
 
-            GL.ClearColor(0.12f, 0.14f, 0.18f, 1.0f);
+                uniform mat4 model;
+                uniform mat4 view;
+                uniform mat4 projection;
+
+                void main()
+                {
+                    gl_Position = projection * view * model * vec4(aPos, 1.0);
+                }";
+
+            string outlineFS = @"
+                #version 330 core
+                out vec4 FragColor;
+                uniform vec4 outlineColor;
+                void main()
+                {
+                    FragColor = outlineColor;
+                }";
+
+            _outlineShader = GL.CreateProgram();
+            int oVS = GL.CreateShader(ShaderType.VertexShader);
+            GL.ShaderSource(oVS, outlineVS);
+            GL.CompileShader(oVS);
+            int oFS = GL.CreateShader(ShaderType.FragmentShader);
+            GL.ShaderSource(oFS, outlineFS);
+            GL.CompileShader(oFS);
+            GL.AttachShader(_outlineShader, oVS);
+            GL.AttachShader(_outlineShader, oFS);
+            GL.LinkProgram(_outlineShader);
+            GL.DeleteShader(oVS);
+            GL.DeleteShader(oFS);
+
             GL.Enable(EnableCap.DepthTest);
-            GL.Disable(EnableCap.CullFace); // quads may be single-sided in any winding; disable culling so all faces visible
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
@@ -287,13 +345,15 @@ namespace VoxelQuadsViewer
         {
             base.OnRenderFrame(e);
 
+            // Set dark blue background
+            GL.ClearColor(0.0f, 0.0f, 0.2f, 1.0f); // RGB = dark blue, Alpha = 1
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-            GL.UseProgram(_shader);
 
-            // Model matrix (static placement of the voxel model)
+            // === Common matrices ===
             var model = Matrix4.CreateTranslation(_modelTranslation);
+            var outlineModel = Matrix4.CreateScale(1.05f) * model;
 
-            // --- Camera orbiting around the model ---
+            // Camera orbit math
             float yawRad = MathHelper.DegreesToRadians(_yaw);
             float pitchRad = MathHelper.DegreesToRadians(_pitch);
 
@@ -304,8 +364,6 @@ namespace VoxelQuadsViewer
             );
 
             var view = Matrix4.LookAt(camPos, Vector3.Zero, Vector3.UnitY);
-
-            // Projection matrix
             var proj = Matrix4.CreatePerspectiveFieldOfView(
                 MathHelper.DegreesToRadians(60f),
                 Size.X / (float)Size.Y,
@@ -313,29 +371,39 @@ namespace VoxelQuadsViewer
                 100f
             );
 
-            // Upload uniforms
-            GL.UniformMatrix4(GL.GetUniformLocation(_shader, "model"), false, ref model);
-            GL.UniformMatrix4(GL.GetUniformLocation(_shader, "view"), false, ref view);
-            GL.UniformMatrix4(GL.GetUniformLocation(_shader, "projection"), false, ref proj);
+            // === Outline Pass ===
+            GL.Enable(EnableCap.CullFace);
+            GL.CullFace(CullFaceMode.Front);
 
-            // Use your shader
-            GL.UseProgram(_shader);
+            GL.UseProgram(_outlineShader);
+            GL.UniformMatrix4(GL.GetUniformLocation(_outlineShader, "model"), false, ref outlineModel);
+            GL.UniformMatrix4(GL.GetUniformLocation(_outlineShader, "view"), false, ref view);
+            GL.UniformMatrix4(GL.GetUniformLocation(_outlineShader, "projection"), false, ref proj);
+            GL.Uniform4(GL.GetUniformLocation(_outlineShader, "outlineColor"), 0f, 0f, 0f, 1f);
 
-            // Camera position = camPos you already compute
-            GL.Uniform3(GL.GetUniformLocation(_shader, "viewPos"), camPos);
+            GL.BindVertexArray(_vao);
+            GL.DrawElements(PrimitiveType.Triangles, _modelIndices.Length, DrawElementsType.UnsignedInt, 0);
 
-            // Example light
-            Vector3 lightPos = new Vector3(2f, 2f, 2f);
-            Vector3 lightColor = new Vector3(1f, 1f, 1f);
-            GL.Uniform3(GL.GetUniformLocation(_shader, "lightPos"), lightPos);
-            GL.Uniform3(GL.GetUniformLocation(_shader, "lightColor"), lightColor);
+            // === Cel Shader Pass ===
+            GL.CullFace(CullFaceMode.Back);
 
-            // Draw the voxel model
+            GL.UseProgram(_celShader);
+            GL.UniformMatrix4(GL.GetUniformLocation(_celShader, "model"), false, ref model);
+            GL.UniformMatrix4(GL.GetUniformLocation(_celShader, "view"), false, ref view);
+            GL.UniformMatrix4(GL.GetUniformLocation(_celShader, "projection"), false, ref proj);
+
+            // Light + camera
+            GL.Uniform3(GL.GetUniformLocation(_celShader, "lightPos"), new Vector3(2f, 2f, 2f));
+            GL.Uniform3(GL.GetUniformLocation(_celShader, "lightColor"), new Vector3(1f, 1f, 1f));
+            GL.Uniform3(GL.GetUniformLocation(_celShader, "viewPos"), camPos);
+
             GL.BindVertexArray(_vao);
             GL.DrawElements(PrimitiveType.Triangles, _modelIndices.Length, DrawElementsType.UnsignedInt, 0);
 
             SwapBuffers();
         }
+
+
 
         protected override void OnMouseMove(MouseMoveEventArgs e)
         {
