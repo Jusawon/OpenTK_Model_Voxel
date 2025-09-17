@@ -33,11 +33,11 @@ namespace VoxelQuadsViewer
 
         private Vector3 _modelTranslation = Vector3.Zero;
         private float _panSpeed = 1.5f;
+        private float _modelScale = 1.0f;
 
         public CubeWindow(GameWindowSettings gws, NativeWindowSettings nws) : base(gws, nws) { }
         private Vector2 _lastMousePos;
         private bool _dragging = false;
-        private bool _firstMove = true;
 
         private float _yaw = -45f;   // left-right
         private float _pitch = 30f;  // up-down
@@ -443,8 +443,8 @@ namespace VoxelQuadsViewer
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             // === Common matrices ===
-            var model = Matrix4.CreateTranslation(_modelTranslation);
-            var outlineModel = Matrix4.CreateScale(1.05f) * model;
+            var model = Matrix4.CreateScale(_modelScale) * Matrix4.CreateTranslation(_modelTranslation);
+
 
             // Camera orbit math
             float yawRad = MathHelper.DegreesToRadians(_yaw);
@@ -524,6 +524,8 @@ namespace VoxelQuadsViewer
             if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.D)) _modelTranslation.Z += _panSpeed * dt;
             if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Q)) _modelTranslation.Y -= _panSpeed * dt;
             if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.E)) _modelTranslation.Y += _panSpeed * dt;
+            if (input.IsKeyDown(Keys.Up)) _modelScale += 0.0001f;
+            if (input.IsKeyDown(Keys.Down))_modelScale = Math.Max(0.0001f, _modelScale - 0.0001f);
         }
 
         protected override void OnMouseMove(MouseMoveEventArgs e)
