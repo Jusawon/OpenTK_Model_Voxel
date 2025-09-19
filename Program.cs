@@ -27,7 +27,7 @@ namespace VoxelQuadsViewer
     class CubeWindow : GameWindow
     {
         private int _vao, _vbo, _ebo;
-        private int _celShader, _outlineShader, _flatShader;
+        private int _celShader;
         private float[] _modelVertices;
         private uint[] _modelIndices;
 
@@ -41,7 +41,6 @@ namespace VoxelQuadsViewer
 
         private float _yaw = -45f;   // left-right
         private float _pitch = 30f;  // up-down
-        private float _distance = 5f; // zoom
 
         Vector3[][] cubes = {
             new Vector3[] { // Cube 0
@@ -380,10 +379,10 @@ namespace VoxelQuadsViewer
             base.OnUpdateFrame(e);
             var input = KeyboardState;
             float dt = (float)e.Time;
-            if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.W)) _modelTranslation.X -= _panSpeed * dt;
-            if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.S)) _modelTranslation.X += _panSpeed * dt;
-            if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.A)) _modelTranslation.Z -= _panSpeed * dt;
-            if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.D)) _modelTranslation.Z += _panSpeed * dt;
+            if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.W)) _modelTranslation.Z -= _panSpeed * dt;
+            if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.S)) _modelTranslation.Z += _panSpeed * dt;
+            if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.A)) _modelTranslation.X -= _panSpeed * dt;
+            if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.D)) _modelTranslation.X += _panSpeed * dt;
             if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Q)) _modelTranslation.Y -= _panSpeed * dt;
             if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.E)) _modelTranslation.Y += _panSpeed * dt;
             if (input.IsKeyDown(Keys.Up)) _modelScale += 0.0001f;
@@ -426,14 +425,6 @@ namespace VoxelQuadsViewer
             {
                 _dragging = false;
             }
-        }
-
-        protected override void OnMouseWheel(MouseWheelEventArgs e)
-        {
-            base.OnMouseWheel(e);
-
-            _distance -= e.OffsetY * 0.25f;
-            _distance = Math.Clamp(_distance, 1f, 10f);
         }
 
     }
