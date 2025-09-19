@@ -341,20 +341,16 @@ namespace VoxelQuadsViewer
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             // === Common matrices ===
-            var model = Matrix4.CreateScale(_modelScale) * Matrix4.CreateTranslation(_modelTranslation);
+            var model =
+            Matrix4.CreateScale(_modelScale) *
+            Matrix4.CreateRotationY(MathHelper.DegreesToRadians(_yaw)) *
+            Matrix4.CreateRotationX(MathHelper.DegreesToRadians(_pitch)) *
+            Matrix4.CreateTranslation(_modelTranslation);
 
 
-            // Camera orbit math
-            float yawRad = MathHelper.DegreesToRadians(_yaw);
-            float pitchRad = MathHelper.DegreesToRadians(_pitch);
-
-            Vector3 camPos = new Vector3(
-                _distance * MathF.Cos(pitchRad) * MathF.Cos(yawRad),
-                _distance * MathF.Sin(pitchRad),
-                _distance * MathF.Cos(pitchRad) * MathF.Sin(yawRad)
-            );
-
+            var camPos = new Vector3(0, 2, 5); // fixed camera
             var view = Matrix4.LookAt(camPos, Vector3.Zero, Vector3.UnitY);
+
             var proj = Matrix4.CreatePerspectiveFieldOfView(
                 MathHelper.DegreesToRadians(60f),
                 Size.X / (float)Size.Y,
