@@ -37,10 +37,15 @@ namespace VoxelQuadsViewer
 
         public CubeWindow(GameWindowSettings gws, NativeWindowSettings nws) : base(gws, nws) { }
         private Vector2 _lastMousePos;
-        private bool _dragging = false;
+        private bool _draggingModel = false;
+        private bool _draggingCamera = false;
 
         private float _yaw = -45f;   // left-right
         private float _pitch = 30f;  // up-down
+
+        private float _camYaw = 0f; 
+        private float _camPitch = 20f;        
+        private float _camDistance = 5f;
 
         Vector3[][] cubes = {
             new Vector3[] { // Cube 0
@@ -347,8 +352,20 @@ namespace VoxelQuadsViewer
             Matrix4.CreateTranslation(_modelTranslation);
 
 
-            var camPos = new Vector3(0, 2, 5); // fixed camera
-            var view = Matrix4.LookAt(camPos, Vector3.Zero, Vector3.UnitY);
+            // Camera target = origin (where model sits)
+            Vector3 target = Vector3.Zero;
+
+            // Convert spherical coords to cartesian (orbit camera)
+            float yawRad = MathHelper.DegreesToRadians(_camYaw);
+            float pitchRad = MathHelper.DegreesToRadians(_camPitch);
+
+            Vector3 camPos = new Vector3(
+                _camDistance * MathF.Cos(pitchRad) * MathF.Sin(yawRad),
+                _camDistance * MathF.Sin(pitchRad),
+                _camDistance * MathF.Cos(pitchRad) * MathF.Cos(yawRad)
+            );
+
+            var view = Matrix4.LookAt(camPos, target, Vector3.UnitY);
 
             var proj = Matrix4.CreatePerspectiveFieldOfView(
                 MathHelper.DegreesToRadians(60f),
@@ -392,9 +409,16 @@ namespace VoxelQuadsViewer
         {
             if (e.Button == MouseButton.Left)
             {
-                _dragging = true;
+                _draggingModel = true;
                 // Record current mouse position
                 var state = MouseState; // Get current state from window
+                _lastMousePos = new Vector2(state.X, state.Y);
+            }
+
+            else if (e.Button == MouseButton.Right)
+            {
+                _draggingCamera = true;
+                var state = MouseState;
                 _lastMousePos = new Vector2(state.X, state.Y);
             }
         }
@@ -402,7 +426,7 @@ namespace VoxelQuadsViewer
         {
             base.OnMouseMove(e);
 
-            if (_dragging)
+            if (_draggingModel)
             {
                 var delta = new Vector2(e.X, e.Y) - _lastMousePos;
                 _lastMousePos = new Vector2(e.X, e.Y);
@@ -414,17 +438,34 @@ namespace VoxelQuadsViewer
                 // Clamp pitch to avoid flipping upside down
                 _pitch = Math.Clamp(_pitch, -89f, 89f);
             }
+
+            else if (_draggingCamera)
+            {
+                var delta = new Vector2(e.X, e.Y) - _lastMousePos;
+                _lastMousePos = new Vector2(e.X, e.Y);
+
+                _camYaw += delta.X * 0.3f;
+                _camPitch -= delta.Y * 0.3f;
+                _camPitch = Math.Clamp(_camPitch, -89f, 89f);
+            }
         }
-
-
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             base.OnMouseUp(e);
             if (e.Button == MouseButton.Left)
             {
-                _dragging = false;
+                _draggingModel = false;
             }
+            else if (e.Button == MouseButton.Right) { _draggingCamera = false; }
+        }
+
+        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        {
+            base.OnMouseWheel(e);
+
+            _camDistance -= e.OffsetY * 0.25f;
+            _camDistance = Math.Clamp(_camDistance, 1f, 10f);
         }
 
     }
