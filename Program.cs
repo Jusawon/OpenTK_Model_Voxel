@@ -393,42 +393,6 @@ namespace VoxelQuadsViewer
             GL.DeleteShader(celVSId);
             GL.DeleteShader(celFSId);
 
-            // === Outline Shader ===
-            //string outlineVS = @"
-            //    #version 330 core
-            //    layout(location=0) in vec3 aPos;
-
-            //    uniform mat4 model;
-            //    uniform mat4 view;
-            //    uniform mat4 projection;
-
-            //    void main()
-            //    {
-            //        gl_Position = projection * view * model * vec4(aPos, 1.0);
-            //    }";
-
-            //string outlineFS = @"
-            //    #version 330 core
-            //    out vec4 FragColor;
-            //    uniform vec4 outlineColor;
-            //    void main()
-            //    {
-            //        FragColor = outlineColor;
-            //    }";
-
-            //_outlineShader = GL.CreateProgram();
-            //int oVS = GL.CreateShader(ShaderType.VertexShader);
-            //GL.ShaderSource(oVS, outlineVS);
-            //GL.CompileShader(oVS);
-            //int oFS = GL.CreateShader(ShaderType.FragmentShader);
-            //GL.ShaderSource(oFS, outlineFS);
-            //GL.CompileShader(oFS);
-            //GL.AttachShader(_outlineShader, oVS);
-            //GL.AttachShader(_outlineShader, oFS);
-            //GL.LinkProgram(_outlineShader);
-            //GL.DeleteShader(oVS);
-            //GL.DeleteShader(oFS);
-
             GL.Enable(EnableCap.DepthTest);
         }
 
@@ -464,24 +428,7 @@ namespace VoxelQuadsViewer
                 100f
             );
 
-            //// === Outline Pass ===
-            //GL.Enable(EnableCap.CullFace);
-            //GL.CullFace(CullFaceMode.Front);
-
-            //GL.UseProgram(_outlineShader);
-            //GL.UniformMatrix4(GL.GetUniformLocation(_outlineShader, "model"), false, ref outlineModel);
-            //GL.UniformMatrix4(GL.GetUniformLocation(_outlineShader, "view"), false, ref view);
-            //GL.UniformMatrix4(GL.GetUniformLocation(_outlineShader, "projection"), false, ref proj);
-            //GL.Uniform4(GL.GetUniformLocation(_outlineShader, "outlineColor"), 0f, 0f, 0f, 1f);
-
-            //GL.BindVertexArray(_vao);
-            //GL.DrawElements(PrimitiveType.Triangles, _modelIndices.Length, DrawElementsType.UnsignedInt, 0);
-
-            //GL.Enable(EnableCap.CullFace);
-            //GL.CullFace(CullFaceMode.Back);
             //=== Cel Shader Pass ===
-
-
             GL.UseProgram(_celShader);
             GL.UniformMatrix4(GL.GetUniformLocation(_celShader, "model"), false, ref model);
             GL.UniformMatrix4(GL.GetUniformLocation(_celShader, "view"), false, ref view);
@@ -494,21 +441,6 @@ namespace VoxelQuadsViewer
 
             GL.BindVertexArray(_vao);
             GL.DrawElements(PrimitiveType.Triangles, _modelIndices.Length, DrawElementsType.UnsignedInt, 0);
-
-
-            //GL.UseProgram(_flatShader);
-            //GL.UniformMatrix4(GL.GetUniformLocation(_flatShader, "model"), false, ref model);
-            //GL.UniformMatrix4(GL.GetUniformLocation(_flatShader, "view"), false, ref view);
-            //GL.UniformMatrix4(GL.GetUniformLocation(_flatShader, "projection"), false, ref proj);
-
-            //// Light + camera
-            //GL.Uniform3(GL.GetUniformLocation(_flatShader, "lightPos"), new Vector3(2f, 2f, 2f));
-            //GL.Uniform3(GL.GetUniformLocation(_flatShader, "lightColor"), new Vector3(1f, 1f, 1f));
-            //GL.Uniform3(GL.GetUniformLocation(_flatShader, "viewPos"), camPos);
-
-            //GL.BindVertexArray(_vao);
-            //GL.DrawElements(PrimitiveType.Triangles, _modelIndices.Length, DrawElementsType.UnsignedInt, 0);
-
 
             SwapBuffers();
         }
