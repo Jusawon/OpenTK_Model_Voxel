@@ -388,7 +388,16 @@ namespace VoxelQuadsViewer
             if (input.IsKeyDown(Keys.Up)) _modelScale += 0.0001f;
             if (input.IsKeyDown(Keys.Down))_modelScale = Math.Max(0.0001f, _modelScale - 0.0001f);
         }
-
+        protected override void OnMouseDown(MouseButtonEventArgs e)
+        {
+            if (e.Button == MouseButton.Left)
+            {
+                _dragging = true;
+                // Record current mouse position
+                var state = MouseState; // Get current state from window
+                _lastMousePos = new Vector2(state.X, state.Y);
+            }
+        }
         protected override void OnMouseMove(MouseMoveEventArgs e)
         {
             base.OnMouseMove(e);
@@ -407,16 +416,7 @@ namespace VoxelQuadsViewer
             }
         }
 
-        protected override void OnMouseDown(MouseButtonEventArgs e)
-        {
-            if (e.Button == MouseButton.Left)
-            {
-                _dragging = true;
-                // Record current mouse position
-                var state = MouseState; // Get current state from window
-                _lastMousePos = new Vector2(state.X, state.Y);
-            }
-        }
+
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
